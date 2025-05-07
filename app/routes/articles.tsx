@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { format } from "date-fns";
 import { HeartIcon } from "@heroicons/react/24/outline";
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/20/solid";
+import { Link } from "react-router";
 
 export default function Articles() {
   const [articles, setArticles] = useState<
@@ -77,7 +78,7 @@ export default function Articles() {
                   className="flex flex-row text-sky-500 text-xl items-center gap-[13px]
 "
                 >
-                  {article.title}{" "}
+                  <Link to={`/articles/${article.slug}`}>{article.title}</Link>
                   <p
                     className="flex flex-row text-black text-xs items-center gap-[5px]
 "
