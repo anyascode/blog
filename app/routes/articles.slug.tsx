@@ -35,12 +35,17 @@ export default function ArticleSlug({ loaderData }: Route.ComponentProps) {
     updatedAt: "",
   });
 
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<boolean>(false);
+
   useEffect(() => {
     async function fetchArticle(slug: string) {
+      setLoading(true);
       let response = await fetch(
         `https://blog-platform.kata.academy/api/articles/${slug}`
       );
       let data = await response.json();
+      setLoading(false);
       setArticle((prev) => ({ ...prev, ...data.article }));
     }
     fetchArticle(loaderData.postSlug);
