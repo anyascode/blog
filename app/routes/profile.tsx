@@ -1,5 +1,5 @@
 import { useForm } from "react-hook-form";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useUpdateUserMutation } from "~/features/auth/authService";
 import { setCredentials } from "~/features/auth/authSlice";
 import { useNavigate } from "react-router";
@@ -30,19 +30,38 @@ export default function Profile() {
 
   const [updateUser, { isLoading, error }] = useUpdateUserMutation();
 
+  interface User {
+    username: string;
+    email: string;
+    token?: string;
+    bio?: string;
+    image?: string;
+  }
+  const { userInfo } = useSelector(
+    (state: { auth: { userInfo: User } }) => state.auth
+  );
+
   const dispatch = useDispatch();
 
   const navigate = useNavigate();
 
   const submitForm = async (data: EditProfile) => {
-    try {
-      const response = await updateUser({ user: data }).unwrap();
-      dispatch(setCredentials(response));
-      navigate("/articles");
-    } catch (err) {
-      console.log(err);
+    if (!data.image) {
+      delete data.image;
     }
+    const result = await updateUser({ user: data }).unwrap();
+    const normalizedUser = {
+      ...result.user,
+      image: result.user.image === null ? undefined : result.user.image,
+    };
+    dispatch(setCredentials(normalizedUser));
+    localStorage.setItem("userInfo", JSON.stringify(normalizedUser));
+    if (normalizedUser.token) {
+      localStorage.setItem("userToken", normalizedUser.token);
+    }
+    navigate("/articles");
   };
+  console.log(error);
   return (
     <>
       <div className="flex justify-center py-[59px] ">
@@ -72,7 +91,7 @@ export default function Profile() {
                       "Your username needs to be at less than 20 characters",
                   },
                 })}
-                onChange={(e) => {
+                onBlur={(e) => {
                   setValue("username", e.target.value);
                   trigger("username");
                 }}
@@ -99,7 +118,7 @@ export default function Profile() {
                     message: "Invalid email",
                   },
                 })}
-                onChange={(e) => {
+                onBlur={(e) => {
                   setValue("email", e.target.value);
                   trigger("email");
                 }}
@@ -129,7 +148,7 @@ export default function Profile() {
                     message: "Password needs to be less than 40 characters",
                   },
                 })}
-                onChange={(e) => {
+                onBlur={(e) => {
                   setValue("password", e.target.value);
                   trigger("password");
                 }}
@@ -152,8 +171,7 @@ export default function Profile() {
                 className="text-base px-[16px] py-[8px] border border-gray-300 rounded-xs"
                 {...register("image", {
                   validate: async (val: string = "") => {
-                    if (val === "") return true; // поле необязательное
-
+                    if (val == "") return true;
                     try {
                       const res = await fetch(val, { method: "HEAD" });
                       const contentType = res.headers.get("Content-Type");
@@ -165,7 +183,7 @@ export default function Profile() {
                     }
                   },
                 })}
-                onChange={(e) => {
+                onBlur={(e) => {
                   setValue("image", e.target.value);
                   trigger("image");
                 }}
@@ -178,7 +196,7 @@ export default function Profile() {
             </div>
             <button
               type="submit"
-              className="block bg-[#1890FF] text-white p-[8px] text-base rounded-xs mt-[12px]"
+              className="flex flex-row justify-center items-center gap-1 bg-[#1890FF] text-white p-[8px] text-base rounded-xs mt-[12px]"
             >
               {isLoading ? (
                 <>

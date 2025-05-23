@@ -1,4 +1,5 @@
 import { useForm } from "react-hook-form";
+import { useEffect } from "react";
 import { useNavigate, Link } from "react-router";
 import { useDispatch, useSelector } from "react-redux";
 import { userLogin } from "../features/auth/authSlice";
@@ -6,7 +7,7 @@ import type { AppDispatch } from "~/store";
 import { ArrowPathIcon } from "@heroicons/react/24/outline";
 
 export default function SignIn() {
-  const { loading, error, success } = useSelector(
+  const { loading, error } = useSelector(
     (state: { auth: { loading: boolean; error: any; success: boolean } }) =>
       state.auth
   );
@@ -14,6 +15,7 @@ export default function SignIn() {
   const dispatch = useDispatch<AppDispatch>();
 
   const navigate = useNavigate();
+  const serverSideErr = JSON.parse(error);
 
   const { register, handleSubmit } = useForm<SignInData>();
 
@@ -22,22 +24,22 @@ export default function SignIn() {
     password: string;
   }
 
-  const submitForm = (data: SignInData) => {
+  const submitForm = async (data: SignInData) => {
     try {
-      dispatch(
+      await dispatch(
         userLogin({
           user: {
             email: data.email,
             password: data.password,
           },
         })
-      );
-      navigate("/articles");
-    } catch (err) {
+      ).unwrap(); // Waits for the thunk to resolve or reject
+
+      navigate("/articles"); // Only runs if login is successful
+    } catch (err: any) {
       console.log(err);
     }
   };
-
   return (
     <>
       <div className="flex justify-center py-[59px] ">
@@ -56,7 +58,9 @@ export default function SignIn() {
                 id="email-form"
                 type="email"
                 placeholder="Email address"
-                className="text-base px-[16px] py-[8px] border border-gray-300 rounded-xs"
+                className={`text-base px-[16px] py-[8px] border ${
+                  serverSideErr ? `border-red-600` : `border-gray-300`
+                } rounded-xs`}
                 {...register("email", {
                   required: { value: true, message: "Invalid email address" },
                 })}
@@ -70,15 +74,27 @@ export default function SignIn() {
                 id="password-form"
                 type="password"
                 placeholder="Password"
-                className="text-base px-[16px] py-[8px] border border-gray-300 rounded-xs"
+                className={`text-base px-[16px] py-[8px] border ${
+                  serverSideErr ? `border-red-600` : `border-gray-300`
+                } rounded-xs`}
                 {...register("password", {
                   required: { value: true, message: "Please enter password" },
                 })}
               />
             </div>
+            {serverSideErr?.errors ? (
+              <p className="capitalize text-red-600 text-sm">
+                {Object.entries(serverSideErr.errors)
+                  .join(",")
+                  .split(",")
+                  .join(" ")}
+              </p>
+            ) : (
+              ""
+            )}
             <button
               type="submit"
-              className="block bg-[#1890FF] text-white p-[8px] text-base rounded-xs mt-[12px]"
+              className="flex flex-row justify-center items-center gap-1 bg-[#1890FF] text-white p-[8px] text-base rounded-xs mt-[12px]"
             >
               {" "}
               {loading ? (

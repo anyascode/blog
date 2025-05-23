@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { useGetUserDetailsQuery } from "~/features/auth/authService";
 import { logout, setCredentials } from "~/features/auth/authSlice";
 import type { AppDispatch } from "~/store";
@@ -17,6 +17,8 @@ export default function Header() {
     (state: { auth: { userInfo: User } }) => state.auth
   );
 
+  const navigate = useNavigate();
+
   const { data, isFetching } = useGetUserDetailsQuery("userDetails", {
     pollingInterval: 900000,
   });
@@ -26,7 +28,7 @@ export default function Header() {
   const dispatch = useDispatch<AppDispatch>();
 
   useEffect(() => {
-    if (data) dispatch(setCredentials(data));
+    if (data && data.user) dispatch(setCredentials(data.user));
   }, [data, dispatch]);
 
   return (
@@ -39,12 +41,12 @@ export default function Header() {
             </li>
 
             <li>
-              <a
-                href="#"
+              <Link
+                to="/new-article"
                 className="px-[10px] py-[6px] border border-lime-500 rounded-sm text-lime-500 text-sm"
               >
                 Create article
-              </a>
+              </Link>
             </li>
 
             <li>
@@ -54,7 +56,7 @@ export default function Header() {
               >
                 {userInfo.username}{" "}
                 <img
-                  className="rounded-[50%] block size-[46px]"
+                  className="rounded-[50%] block size-[46px]  object-cover"
                   src={
                     userInfo.image
                       ? userInfo.image
@@ -68,7 +70,10 @@ export default function Header() {
             <li>
               <button
                 className="px-[18px] py-[10px] border border-black rounded-sm text-sm"
-                onClick={() => dispatch(logout())}
+                onClick={() => {
+                  dispatch(logout());
+                  navigate("/sign-in");
+                }}
               >
                 Log Out
               </button>

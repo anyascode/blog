@@ -7,13 +7,14 @@ import { useNavigate, Link } from "react-router";
 import { ArrowPathIcon } from "@heroicons/react/24/outline";
 
 export default function SignUp() {
-  const { loading, error, success } = useSelector(
-    (state: {
-      auth: { loading: boolean; userInfo: any; error: any; success: boolean };
-    }) => state.auth
+  const { loading, error } = useSelector(
+    (state: { auth: { loading: boolean; error: any } }) => state.auth
   );
+
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
+
+  const serverSideErr = JSON.parse(error);
 
   interface SignUpFormData {
     username: string;
@@ -39,7 +40,6 @@ export default function SignUp() {
       checkbox: false,
     },
   });
-
   const submitForm = (data: SignUpFormData) => {
     if (data.password !== data.confirmPassword) {
       alert("Password mismatch");
@@ -56,12 +56,14 @@ export default function SignUp() {
           },
         })
       );
-      navigate("/sign-in");
+      if (!serverSideErr) {
+        navigate("/sign-in");
+      }
     } catch (err) {
       console.log(err);
     }
   };
-
+  console.log(serverSideErr);
   return (
     <>
       <div className="flex justify-center py-[59px] ">
@@ -80,7 +82,11 @@ export default function SignUp() {
               <input
                 type="text"
                 placeholder="Username"
-                className="text-base px-[16px] py-[8px] border border-gray-300 rounded-xs"
+                className={`text-base px-[16px] py-[8px] border ${
+                  errors?.username || serverSideErr?.errors?.username
+                    ? `border-red-600`
+                    : `border-gray-300`
+                } rounded-xs`}
                 {...register("username", {
                   required: { value: true, message: "Please enter username" },
                   minLength: {
@@ -93,14 +99,15 @@ export default function SignUp() {
                       "Your username needs to be at less than 20 characters",
                   },
                 })}
-                onChange={(e) => {
+                onBlur={(e) => {
                   setValue("username", e.target.value);
                   trigger("username");
                 }}
               />
-              {errors?.username?.message ? (
+              {errors?.username?.message || serverSideErr?.errors?.username ? (
                 <p className="text-sm text-red-600">
-                  {errors.username.message}
+                  {errors?.username?.message ||
+                    `Username ${serverSideErr?.errors?.username}`}
                 </p>
               ) : (
                 ""
@@ -113,17 +120,24 @@ export default function SignUp() {
               <input
                 type="email"
                 placeholder="Email address"
-                className="text-base px-[16px] py-[8px] border border-gray-300 rounded-xs"
+                className={`text-base px-[16px] py-[8px] border ${
+                  errors?.email || serverSideErr?.errors?.email
+                    ? `border-red-600`
+                    : `border-gray-300`
+                }  rounded-xs`}
                 {...register("email", {
                   required: { value: true, message: "Invalid email address" },
                 })}
-                onChange={(e) => {
+                onBlur={(e) => {
                   setValue("email", e.target.value);
                   trigger("email");
                 }}
               />
-              {errors?.email?.message ? (
-                <p className="text-sm text-red-600">{errors.email.message}</p>
+              {errors?.email?.message || serverSideErr?.errors?.email ? (
+                <p className="text-sm text-red-600">
+                  {errors?.email?.message ||
+                    `Email ${serverSideErr?.errors?.email}`}
+                </p>
               ) : (
                 ""
               )}
@@ -147,7 +161,7 @@ export default function SignUp() {
                     message: "Password needs to be less than 40 characters",
                   },
                 })}
-                onChange={(e) => {
+                onBlur={(e) => {
                   setValue("password", e.target.value);
                   trigger("password");
                 }}
@@ -213,7 +227,7 @@ export default function SignUp() {
             <button
               type="submit"
               className="flex flex-row justify-center items-center bg-[#1890FF] text-white p-[8px] text-base rounded-xs mt-[12px] gap-1"
-              disabled={loading ? true : false}
+              disabled={loading}
             >
               {" "}
               {loading ? (
