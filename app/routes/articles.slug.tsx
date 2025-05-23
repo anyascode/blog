@@ -23,6 +23,8 @@ export default function ArticleSlug({ loaderData }: Route.ComponentProps) {
       </div>
     );
   }
+
+  console.log(data);
   return (
     <>
       {isLoading ? (
