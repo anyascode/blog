@@ -1,20 +1,19 @@
 import { useForm } from "react-hook-form";
-import { useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import type { AppDispatch } from "~/store";
-import { registerUser } from "app/features/auth/authSlice";
 import { useNavigate, Link } from "react-router";
 import { ArrowPathIcon } from "@heroicons/react/24/outline";
+import { useSignUpMutation } from "~/features/auth/authService";
 
 export default function SignUp() {
-  const { loading, error } = useSelector(
-    (state: { auth: { loading: boolean; error: any } }) => state.auth
-  );
+  const [signUp, { isLoading, error }] = useSignUpMutation();
 
-  const dispatch = useDispatch<AppDispatch>();
+  interface ServerError {
+    errors: Record<string, string[]>;
+  }
+
+  const serverError =
+    error && "data" in error ? (error.data as ServerError) : undefined;
+
   const navigate = useNavigate();
-
-  const serverSideErr = JSON.parse(error);
 
   interface SignUpFormData {
     username: string;
@@ -41,29 +40,22 @@ export default function SignUp() {
     },
   });
   const submitForm = (data: SignUpFormData) => {
-    if (data.password !== data.confirmPassword) {
-      alert("Password mismatch");
-    }
-
     data.email = data.email.toLowerCase();
     try {
-      dispatch(
-        registerUser({
-          user: {
-            username: data.username,
-            email: data.email,
-            password: data.password,
-          },
-        })
-      );
-      if (!serverSideErr) {
+      signUp({
+        user: {
+          username: data.username,
+          email: data.email,
+          password: data.password,
+        },
+      }).unwrap();
+      if (!error) {
         navigate("/sign-in");
       }
     } catch (err) {
       console.log(err);
     }
   };
-  console.log(serverSideErr);
   return (
     <>
       <div className="flex justify-center py-[59px] ">
@@ -83,7 +75,7 @@ export default function SignUp() {
                 type="text"
                 placeholder="Username"
                 className={`text-base px-[16px] py-[8px] border ${
-                  errors?.username || serverSideErr?.errors?.username
+                  errors?.username || serverError?.errors?.username
                     ? `border-red-600`
                     : `border-gray-300`
                 } rounded-xs`}
@@ -104,10 +96,10 @@ export default function SignUp() {
                   trigger("username");
                 }}
               />
-              {errors?.username?.message || serverSideErr?.errors?.username ? (
+              {errors?.username?.message || serverError?.errors?.username ? (
                 <p className="text-sm text-red-600">
                   {errors?.username?.message ||
-                    `Username ${serverSideErr?.errors?.username}`}
+                    `Username ${serverError?.errors?.username}`}
                 </p>
               ) : (
                 ""
@@ -121,7 +113,7 @@ export default function SignUp() {
                 type="email"
                 placeholder="Email address"
                 className={`text-base px-[16px] py-[8px] border ${
-                  errors?.email || serverSideErr?.errors?.email
+                  errors?.email || serverError?.errors?.email
                     ? `border-red-600`
                     : `border-gray-300`
                 }  rounded-xs`}
@@ -133,10 +125,10 @@ export default function SignUp() {
                   trigger("email");
                 }}
               />
-              {errors?.email?.message || serverSideErr?.errors?.email ? (
+              {errors?.email?.message || serverError?.errors?.email ? (
                 <p className="text-sm text-red-600">
                   {errors?.email?.message ||
-                    `Email ${serverSideErr?.errors?.email}`}
+                    `Email ${serverError?.errors?.email}`}
                 </p>
               ) : (
                 ""
@@ -227,10 +219,10 @@ export default function SignUp() {
             <button
               type="submit"
               className="flex flex-row justify-center items-center bg-[#1890FF] text-white p-[8px] text-base rounded-xs mt-[12px] gap-1"
-              disabled={loading}
+              disabled={isLoading}
             >
               {" "}
-              {loading ? (
+              {isLoading ? (
                 <>
                   {" "}
                   <ArrowPathIcon className="animate-spin size-[14px] " />{" "}

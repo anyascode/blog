@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router";
 import { useGetUserDetailsQuery } from "~/features/auth/authService";
-import { logout, setCredentials } from "~/features/auth/authSlice";
+import { setCredentials, logout } from "~/features/auth/authSlice";
 import type { AppDispatch } from "~/store";
 
 export default function Header() {
@@ -23,8 +23,6 @@ export default function Header() {
     pollingInterval: 900000,
   });
 
-  console.log(userInfo);
-  console.log(data);
   const dispatch = useDispatch<AppDispatch>();
 
   useEffect(() => {

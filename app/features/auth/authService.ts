@@ -38,6 +38,38 @@ export const authApi = createApi({
     },
   }),
   endpoints: (builder) => ({
+    login: builder.mutation<{ user: User }, LoginCredentials>({
+      query: (credentials) => ({
+        url: "/users/login",
+        method: "POST",
+        body: credentials,
+      }),
+      async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+        try {
+          const { data } = await queryFulfilled;
+          const normalizedUser = {
+            ...data.user,
+            image: data.user.image === null ? undefined : data.user.image,
+          };
+
+          dispatch(setCredentials(normalizedUser));
+
+          localStorage.setItem("userInfo", JSON.stringify(normalizedUser));
+          if (data.user.token) {
+            localStorage.setItem("userToken", data.user.token);
+          }
+        } catch (err) {
+          console.log(err);
+        }
+      },
+    }),
+    signUp: builder.mutation<{ user: User }, RegisterCredentials>({
+      query: (credentials) => ({
+        url: "/users",
+        method: "POST",
+        body: credentials,
+      }),
+    }),
     getUserDetails: builder.query({
       query: () => ({
         url: "/user",
@@ -51,7 +83,7 @@ export const authApi = createApi({
       query: (data) => ({
         url: "/user",
         method: "PUT",
-        body: JSON.stringify(data),
+        body: data,
         headers: {
           "Content-Type": "application/json",
         },
@@ -59,21 +91,12 @@ export const authApi = createApi({
       async onQueryStarted(arg, { dispatch, queryFulfilled }) {
         try {
           const { data } = await queryFulfilled;
-          // Update authSlice state
-          dispatch(
-            setCredentials({
-              ...data.user,
-              image: data.user.image === null ? undefined : data.user.image,
-            })
-          );
+          const normalizedUser = {
+            ...data.user,
+            image: data.user.image === null ? undefined : data.user.image,
+          };
           // Update localStorage
-          localStorage.setItem(
-            "userInfo",
-            JSON.stringify({
-              ...data.user,
-              image: data.user.image === null ? undefined : data.user.image,
-            })
-          );
+          localStorage.setItem("userInfo", JSON.stringify(normalizedUser));
           if (data.user.token) {
             localStorage.setItem("userToken", data.user.token);
           }
@@ -85,4 +108,9 @@ export const authApi = createApi({
   }),
 });
 
-export const { useGetUserDetailsQuery, useUpdateUserMutation } = authApi;
+export const {
+  useLoginMutation,
+  useSignUpMutation,
+  useGetUserDetailsQuery,
+  useUpdateUserMutation,
+} = authApi;

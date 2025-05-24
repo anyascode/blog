@@ -1,21 +1,18 @@
 import { useForm } from "react-hook-form";
-import { useEffect } from "react";
 import { useNavigate, Link } from "react-router";
-import { useDispatch, useSelector } from "react-redux";
-import { userLogin } from "../features/auth/authSlice";
-import type { AppDispatch } from "~/store";
 import { ArrowPathIcon } from "@heroicons/react/24/outline";
+import { useLoginMutation } from "~/features/auth/authService";
 
 export default function SignIn() {
-  const { loading, error } = useSelector(
-    (state: { auth: { loading: boolean; error: any; success: boolean } }) =>
-      state.auth
-  );
-
-  const dispatch = useDispatch<AppDispatch>();
-
+  const [login, { isLoading, error }] = useLoginMutation();
   const navigate = useNavigate();
-  const serverSideErr = JSON.parse(error);
+
+  interface ServerError {
+    errors: Record<string, string[]>;
+  }
+
+  const serverError =
+    error && "data" in error ? (error.data as ServerError) : undefined;
 
   const { register, handleSubmit } = useForm<SignInData>();
 
@@ -26,18 +23,17 @@ export default function SignIn() {
 
   const submitForm = async (data: SignInData) => {
     try {
-      await dispatch(
-        userLogin({
-          user: {
-            email: data.email,
-            password: data.password,
-          },
-        })
-      ).unwrap(); // Waits for the thunk to resolve or reject
+      const credentials = {
+        user: {
+          email: data.email,
+          password: data.password,
+        },
+      };
 
-      navigate("/articles"); // Only runs if login is successful
-    } catch (err: any) {
-      console.log(err);
+      await login(credentials).unwrap();
+      navigate("/articles");
+    } catch (err) {
+      console.error(err);
     }
   };
   return (
@@ -46,7 +42,6 @@ export default function SignIn() {
         <div className="bg-white py-[48px] px-[32px] w-sm border border-gray-300 rounded-sm shadow-xl">
           <h1 className="text-center text-xl font-medium">Sign in</h1>
           <form
-            action="submit"
             className="flex flex-col gap-[12px] mt-[21px]"
             onSubmit={handleSubmit(submitForm)}
           >
@@ -59,7 +54,7 @@ export default function SignIn() {
                 type="email"
                 placeholder="Email address"
                 className={`text-base px-[16px] py-[8px] border ${
-                  serverSideErr ? `border-red-600` : `border-gray-300`
+                  error ? `border-red-600` : `border-gray-300`
                 } rounded-xs`}
                 {...register("email", {
                   required: { value: true, message: "Invalid email address" },
@@ -75,16 +70,16 @@ export default function SignIn() {
                 type="password"
                 placeholder="Password"
                 className={`text-base px-[16px] py-[8px] border ${
-                  serverSideErr ? `border-red-600` : `border-gray-300`
+                  error ? `border-red-600` : `border-gray-300`
                 } rounded-xs`}
                 {...register("password", {
                   required: { value: true, message: "Please enter password" },
                 })}
               />
             </div>
-            {serverSideErr?.errors ? (
+            {serverError ? (
               <p className="capitalize text-red-600 text-sm">
-                {Object.entries(serverSideErr.errors)
+                {Object.entries(serverError.errors)
                   .join(",")
                   .split(",")
                   .join(" ")}
@@ -97,7 +92,7 @@ export default function SignIn() {
               className="flex flex-row justify-center items-center gap-1 bg-[#1890FF] text-white p-[8px] text-base rounded-xs mt-[12px]"
             >
               {" "}
-              {loading ? (
+              {isLoading ? (
                 <>
                   {" "}
                   <ArrowPathIcon className="animate-spin size-[14px] " />{" "}

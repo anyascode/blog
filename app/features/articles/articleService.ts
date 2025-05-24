@@ -1,6 +1,18 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import type { RootState } from "../../store";
 
+interface Article {
+  title: string;
+  description: string;
+  body: string;
+  tagList?: string[];
+}
+
+interface UpdateArticleRequest {
+  slug: string;
+  article: Article;
+}
+
 export const articlesApi = createApi({
   reducerPath: "articlesApi",
   baseQuery: fetchBaseQuery({
@@ -22,12 +34,33 @@ export const articlesApi = createApi({
     }),
     createArticle: builder.mutation({
       query: (article) => ({
-        url: '/articles',
-        method: 'POST',
+        url: "/articles",
+        method: "POST",
         body: { article },
+      }),
+    }),
+    updateArticle: builder.mutation<{ article: Article }, UpdateArticleRequest>(
+      {
+        query: ({ slug, article }) => ({
+          url: `/articles/${slug}`,
+          method: "PUT",
+          body: { article },
+        }),
+      }
+    ),
+    deleteArticle: builder.mutation({
+      query: (slug) => ({
+        url: `/article/${slug}`,
+        method: "DELETE",
       }),
     }),
   }),
 });
 
-export const { useGetArticlesQuery, useGetArticleQuery, useCreateArticleMutation } = articlesApi;
+export const {
+  useGetArticlesQuery,
+  useGetArticleQuery,
+  useCreateArticleMutation,
+  useUpdateArticleMutation,
+  useDeleteArticleMutation,
+} = articlesApi;
