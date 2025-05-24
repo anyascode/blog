@@ -13,7 +13,6 @@ export default function NewArticle() {
   } = useForm();
   const navigate = useNavigate();
   const [tagInputs, setTagInputs] = useState<string[]>([""]);
-
   const addTagInput = () => {
     setTagInputs([...tagInputs, ""]);
   };
@@ -28,10 +27,14 @@ export default function NewArticle() {
     setTagInputs(newTags);
   };
 
-  const submitForm = (data: any) => {
-    const tags = tagInputs.filter((tag) => tag.trim() !== "");
-    createArticle({ ...data, tagList: tags }).unwrap();
-    navigate("/articles");
+  const submitForm = async (data: any) => {
+    try {
+      const tags = tagInputs.filter((tag) => tag.trim() !== "");
+      await createArticle({ ...data, tagList: tags }).unwrap();
+      navigate("/articles");
+    } catch (err) {
+      console.log(err);
+    }
   };
 
   return (

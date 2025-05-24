@@ -95,7 +95,6 @@ export const authApi = createApi({
             ...data.user,
             image: data.user.image === null ? undefined : data.user.image,
           };
-          // Update localStorage
           localStorage.setItem("userInfo", JSON.stringify(normalizedUser));
           if (data.user.token) {
             localStorage.setItem("userToken", data.user.token);

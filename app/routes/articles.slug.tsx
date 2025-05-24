@@ -11,9 +11,9 @@ import {
 } from "@heroicons/react/24/outline";
 import { useSelector } from "react-redux";
 import type { RootState } from "~/store";
-import { Link, redirect, useNavigate } from "react-router";
+import { Link, useNavigate } from "react-router";
 import type { PopconfirmProps } from "antd";
-import { Popconfirm, message } from "antd";
+import { Popconfirm } from "antd";
 
 export async function loader({ params }: Route.LoaderArgs) {
   const postSlug = params.slug;
@@ -25,6 +25,7 @@ export default function ArticleSlug({ loaderData }: Route.ComponentProps) {
   const userInfo = useSelector((state: RootState) => state.auth.userInfo);
   const [deleteArticle] = useDeleteArticleMutation();
   const navigate = useNavigate();
+
   if (isError) {
     return (
       <div className="text-red-600 flex flex-row justify-center items-center pt-[251px]">
@@ -34,14 +35,14 @@ export default function ArticleSlug({ loaderData }: Route.ComponentProps) {
     );
   }
 
-  const confirm: PopconfirmProps["onConfirm"] = () => {
-    deleteArticle(loaderData.postSlug);
-    navigate("/articles");
-  };
-
-  const cancel: PopconfirmProps["onCancel"] = (e) => {
-    console.log(e);
-    message.error("Click on No");
+  const confirm: PopconfirmProps["onConfirm"] = async () => {
+    try {
+      console.log("Deleting article:", loaderData.postSlug);
+      await deleteArticle(loaderData.postSlug).unwrap();
+      navigate("/articles");
+    } catch (err) {
+      console.error("Delete error:", err);
+    }
   };
 
   return (
@@ -91,7 +92,7 @@ export default function ArticleSlug({ loaderData }: Route.ComponentProps) {
                     {data?.article.author?.username}
                   </h1>
                   <h2 className="text-xs text-gray-500">
-                    {data?.createdAt
+                    {data?.article.createdAt
                       ? format(new Date(data?.article.createdAt), "PPP")
                       : ""}
                   </h2>
@@ -118,7 +119,7 @@ export default function ArticleSlug({ loaderData }: Route.ComponentProps) {
               </p>
               <div
                 className={`flex flex-row gap-[12px] ${
-                  data.article.author.username !== userInfo.username
+                  data?.article.author.username !== userInfo.username
                     ? `hidden`
                     : ``
                 }`}
@@ -127,7 +128,6 @@ export default function ArticleSlug({ loaderData }: Route.ComponentProps) {
                   title=""
                   description="Are you sure to delete this article?"
                   onConfirm={confirm}
-                  onCancel={cancel}
                   okText="Yes"
                   cancelText="No"
                   placement="right"
@@ -137,8 +137,8 @@ export default function ArticleSlug({ loaderData }: Route.ComponentProps) {
                   </button>
                 </Popconfirm>
                 <Link
-                  to={`/articles/${data.article.slug}/edit`}
-                  state={{ article: data.article }}
+                  to={`/articles/${data?.article.slug}/edit`}
+                  state={{ article: data?.article }}
                   className="text-center text-lime-500 text-sm px-[17px] py-[6px] border border-lime-500 rounded-sm"
                 >
                   Edit
@@ -147,7 +147,7 @@ export default function ArticleSlug({ loaderData }: Route.ComponentProps) {
             </div>
 
             <section className="flex flex-wrap overflow-hidden">
-              <Markdown>{data?.article.body}</Markdown>
+              <Markdown>{data?.article.body || ""}</Markdown>
             </section>
           </div>
         </article>

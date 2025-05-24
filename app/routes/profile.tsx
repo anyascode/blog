@@ -61,7 +61,6 @@ export default function Profile() {
     }
     navigate("/articles");
   };
-  console.log(error);
   return (
     <>
       <div className="flex justify-center py-[59px] ">

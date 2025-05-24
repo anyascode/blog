@@ -6,7 +6,11 @@ import {
   ExclamationCircleIcon,
 } from "@heroicons/react/24/outline";
 import { Link } from "react-router";
-import { useGetArticlesQuery } from "~/features/articles/articleService";
+import {
+  useGetArticlesQuery,
+  useLikeArticleMutation,
+  useRemoveLikeMutation,
+} from "~/features/articles/articleService";
 import Pagination from "~/сomponents/Pagination/Pagination";
 
 export default function Articles() {
@@ -16,6 +20,20 @@ export default function Articles() {
 
   const { data, isLoading, isError } = useGetArticlesQuery(offset);
 
+  const [likeArticle] = useLikeArticleMutation();
+  const [removeLike] = useRemoveLikeMutation();
+
+  const handleLike = async (article: any) => {
+    try {
+      if (article.favorited) {
+        await removeLike(article.slug);
+      } else {
+        await likeArticle(article.slug);
+      }
+    } catch (err) {
+      console.error("Like error:", err);
+    }
+  };
   if (isError) {
     return (
       <div className="text-red-600 flex flex-row justify-center items-center pt-[251px]">
@@ -35,7 +53,7 @@ export default function Articles() {
       ) : (
         <div className="pt-[26px]">
           <ul className="flex flex-col gap-[26px] px-[251px] py-[6px]">
-            {data.articles.map((article: any) => (
+            {data?.articles.map((article: any) => (
               <li
                 key={`${article.slug}-${article.createdAt}`}
                 className="bg-white p-[16px] shadow-md"
@@ -54,7 +72,18 @@ export default function Articles() {
                         className="flex flex-row text-black text-xs items-center gap-[5px]
 "
                       >
-                        <HeartIcon className="size-[16px]" />
+                        <button
+                          className={`flex items-center ${
+                            article.favorited ? "text-red-500" : ""
+                          }`}
+                          onClick={() => handleLike(article)}
+                        >
+                          <HeartIcon
+                            className={`size-[16px] ${
+                              article.favorited ? "fill-current" : ""
+                            }`}
+                          />
+                        </button>
 
                         {article.favoritesCount}
                       </p>

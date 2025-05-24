@@ -68,7 +68,7 @@ export default function ArticlesSlugEdit({ loaderData }: Route.ComponentProps) {
   const submitForm = async (data: any) => {
     try {
       const tags = tagInputs.filter((tag) => tag.trim() !== "");
-      await updateArticle({
+      const result = await updateArticle({
         slug: loaderData.postSlug,
         article: {
           title: data.title,
@@ -78,7 +78,7 @@ export default function ArticlesSlugEdit({ loaderData }: Route.ComponentProps) {
         },
       }).unwrap();
 
-      navigate(`/articles/${loaderData.postSlug}`);
+      navigate(`/articles/${result.article.slug}`, { replace: true });
     } catch (err) {
       console.log(err);
     }
