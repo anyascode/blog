@@ -4,10 +4,13 @@ import type { Route } from "./+types/route-name";
 import {
   useGetArticleQuery,
   useDeleteArticleMutation,
+  useLikeArticleMutation,
+  useRemoveLikeMutation,
 } from "~/features/articles/articleService";
 import {
   ArrowPathIcon,
   ExclamationCircleIcon,
+  HeartIcon,
 } from "@heroicons/react/24/outline";
 import { useSelector } from "react-redux";
 import type { RootState } from "~/store";
@@ -24,6 +27,27 @@ export default function ArticleSlug({ loaderData }: Route.ComponentProps) {
   const { data, isLoading, isError } = useGetArticleQuery(loaderData?.postSlug);
   const userInfo = useSelector((state: RootState) => state.auth.userInfo);
   const [deleteArticle] = useDeleteArticleMutation();
+  const [likeArticle] = useLikeArticleMutation();
+  const [removeLike] = useRemoveLikeMutation();
+  const handleLike = async (article: any) => {
+    try {
+      if (article.favorited) {
+        await removeLike(article.slug);
+      } else {
+        await likeArticle(article.slug);
+      }
+    } catch (err) {
+      console.error("Like error:", err);
+    }
+  };
+  if (isError) {
+    return (
+      <div className="text-red-600 flex flex-row justify-center items-center pt-[251px]">
+        <ExclamationCircleIcon className="size-5" />{" "}
+        <p className="text-xl">{isError}</p>
+      </div>
+    );
+  }
   const navigate = useNavigate();
 
   if (isError) {
@@ -65,9 +89,21 @@ export default function ArticleSlug({ loaderData }: Route.ComponentProps) {
                   {data?.article.title}
                   <p
                     className="flex flex-row text-black text-xs items-center gap-[5px]
-  "
+"
                   >
-                    <img src="/Vector.svg" alt="Likes" />
+                    <button
+                      className={`flex items-center ${
+                        data?.article.favorited ? "text-red-500" : ""
+                      }`}
+                      onClick={() => handleLike(data?.article)}
+                    >
+                      <HeartIcon
+                        className={`size-[16px] ${
+                          data?.article.favorited ? "fill-current" : ""
+                        }`}
+                      />
+                    </button>
+
                     {data?.article.favoritesCount}
                   </p>
                 </h1>
