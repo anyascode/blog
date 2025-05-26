@@ -1,5 +1,3 @@
-import { useSelector } from "react-redux";
-import type { RootState } from "~/store";
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/20/solid";
 
 interface PaginationProps {

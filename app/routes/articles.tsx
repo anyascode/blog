@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useSearchParams } from "react-router";
 import { format } from "date-fns";
 import {
   HeartIcon,
@@ -14,7 +14,12 @@ import {
 import Pagination from "~/сomponents/Pagination/Pagination";
 
 export default function Articles() {
-  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const currentPage = Number(searchParams.get("page")) || 1;
+
+  const setCurrentPage = (page: number) => {
+    setSearchParams({ page: page.toString() });
+  };
 
   const offset = (currentPage - 1) * 5;
 
