@@ -189,6 +189,7 @@ export default function Profile() {
             <button
               type="submit"
               className="flex flex-row justify-center items-center gap-1 bg-[#1890FF] text-white p-[8px] text-base rounded-xs mt-[12px]"
+              disabled={isLoading}
             >
               {isLoading ? (
                 <>
