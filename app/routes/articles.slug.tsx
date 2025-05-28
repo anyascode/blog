@@ -43,11 +43,8 @@ export default function ArticleSlug({ loaderData }: Route.ComponentProps) {
 
   const navigate = useNavigate();
 
-  console.log(error);
-
   const confirm: PopconfirmProps["onConfirm"] = async () => {
     try {
-      console.log("Deleting article:", loaderData.postSlug);
       await deleteArticle(loaderData.postSlug).unwrap();
       navigate("/articles");
     } catch (err) {

@@ -4,6 +4,7 @@ import { useUpdateUserMutation } from "~/features/auth/authService";
 import { setCredentials } from "~/features/auth/authSlice";
 import { useNavigate } from "react-router";
 import { ArrowPathIcon } from "@heroicons/react/24/outline";
+import type { RootState } from "~/store";
 
 export default function Profile() {
   interface EditProfile {
@@ -13,6 +14,8 @@ export default function Profile() {
     image?: string;
   }
 
+  const userInfo = useSelector((state: RootState) => state.auth.userInfo);
+
   const {
     register,
     handleSubmit,
@@ -21,25 +24,14 @@ export default function Profile() {
     formState: { errors },
   } = useForm<EditProfile>({
     defaultValues: {
-      username: "",
-      email: "",
+      username: userInfo?.username || "",
+      email: userInfo?.email || "",
       password: "",
-      image: "",
+      image: userInfo?.image || "",
     },
   });
 
   const [updateUser, { isLoading, error }] = useUpdateUserMutation();
-
-  interface User {
-    username: string;
-    email: string;
-    token?: string;
-    bio?: string;
-    image?: string;
-  }
-  const { userInfo } = useSelector(
-    (state: { auth: { userInfo: User } }) => state.auth
-  );
 
   const dispatch = useDispatch();
 
@@ -61,6 +53,7 @@ export default function Profile() {
     }
     navigate("/articles");
   };
+
   return (
     <>
       <div className="flex justify-center py-[59px] ">

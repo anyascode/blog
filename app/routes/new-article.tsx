@@ -8,6 +8,9 @@ export default function NewArticle() {
   const [createArticle, { isLoading }] = useCreateArticleMutation();
   const {
     register,
+    watch,
+    trigger,
+    setValue,
     handleSubmit,
     formState: { errors },
   } = useForm();
@@ -54,7 +57,18 @@ export default function NewArticle() {
               border-gray-300
            rounded-xs`}
               placeholder="Title"
-              {...register("title", { required: "Title is required" })}
+              {...register("title", {
+                required: "Title is required",
+                validate: () => {
+                  if (watch("title").trim().length === 0) {
+                    return `Field shouldn't be empty`;
+                  }
+                },
+              })}
+              onBlur={(e) => {
+                setValue("title", e.target.value);
+                trigger("title");
+              }}
             />
             {errors.title && (
               <p className="text-red-500">{errors.title.message?.toString()}</p>
@@ -71,7 +85,17 @@ export default function NewArticle() {
               placeholder="Title"
               {...register("description", {
                 required: "Description is required",
+                validate: () => {
+                  if (watch("description").trim().length === 0) {
+                    return `Field shouldn't be empty`;
+                  }
+                },
               })}
+              onBlur={(e) => {
+                const value = e.target.value.trim();
+                setValue("description", value);
+                trigger("description");
+              }}
             />
             {errors.description && (
               <p className="text-red-500">
@@ -88,7 +112,18 @@ export default function NewArticle() {
               border-gray-300
            rounded-xs`}
               placeholder="Text"
-              {...register("body", { required: "Text is required" })}
+              {...register("body", {
+                required: "Text is required",
+                validate: () => {
+                  if (watch("body").trim().length === 0) {
+                    return `Field shouldn't be empty`;
+                  }
+                },
+              })}
+              onBlur={(e) => {
+                setValue("body", e.target.value);
+                trigger("body");
+              }}
             ></textarea>
             {errors.body && (
               <p className="text-red-500">{errors?.body.message?.toString()}</p>
