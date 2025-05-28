@@ -8,7 +8,6 @@ export default function NewArticle() {
   const [createArticle, { isLoading }] = useCreateArticleMutation();
   const {
     register,
-    watch,
     trigger,
     setValue,
     handleSubmit,
@@ -59,14 +58,10 @@ export default function NewArticle() {
               placeholder="Title"
               {...register("title", {
                 required: "Title is required",
-                validate: () => {
-                  if (watch("title").trim().length === 0) {
-                    return `Field shouldn't be empty`;
-                  }
-                },
               })}
               onBlur={(e) => {
-                setValue("title", e.target.value);
+                const value = e.target.value.trim();
+                setValue("title", value);
                 trigger("title");
               }}
             />
@@ -85,14 +80,10 @@ export default function NewArticle() {
               placeholder="Title"
               {...register("description", {
                 required: "Description is required",
-                validate: () => {
-                  if (watch("description").trim().length === 0) {
-                    return `Field shouldn't be empty`;
-                  }
-                },
               })}
               onBlur={(e) => {
-                setValue("description", e.target.value);
+                const value = e.target.value.trim();
+                setValue("description", value);
                 trigger("description");
               }}
             />
@@ -113,11 +104,6 @@ export default function NewArticle() {
               placeholder="Text"
               {...register("body", {
                 required: "Text is required",
-                validate: () => {
-                  if (watch("body").trim().length === 0) {
-                    return `Field shouldn't be empty`;
-                  }
-                },
               })}
               onBlur={(e) => {
                 const value = e.target.value.trim();

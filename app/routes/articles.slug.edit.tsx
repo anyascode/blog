@@ -102,7 +102,6 @@ export default function ArticlesSlugEdit({ loaderData }: Route.ComponentProps) {
     );
   }
 
-  console.log(articleData);
   return (
     <article className="py-[26px] px-[251px]">
       <div className="bg-white py-[48px] px-[32px] shadow-md flex flex-col gap-[25px]">
@@ -123,14 +122,10 @@ export default function ArticlesSlugEdit({ loaderData }: Route.ComponentProps) {
               defaultValue={articleData?.title}
               {...register("title", {
                 required: "Title is required",
-                validate: () => {
-                  if (watch("title").trim().length === 0) {
-                    return `Field shouldn't be empty`;
-                  }
-                },
               })}
               onBlur={(e) => {
-                setValue("title", e.target.value);
+                const value = e.target.value.trim();
+                setValue("title", value);
                 trigger("title");
               }}
             />
@@ -150,14 +145,10 @@ export default function ArticlesSlugEdit({ loaderData }: Route.ComponentProps) {
               defaultValue={articleData?.description}
               {...register("description", {
                 required: "Description is required",
-                validate: () => {
-                  if (watch("description").trim().length === 0) {
-                    return `Field shouldn't be empty`;
-                  }
-                },
               })}
               onBlur={(e) => {
-                setValue("description", e.target.value);
+                const value = e.target.value.trim();
+                setValue("description", value);
                 trigger("description");
               }}
             />
@@ -179,11 +170,6 @@ export default function ArticlesSlugEdit({ loaderData }: Route.ComponentProps) {
               defaultValue={articleData?.body}
               {...register("body", {
                 required: "Text is required",
-                validate: () => {
-                  if (watch("body").trim().length === 0) {
-                    return `Field shouldn't be empty`;
-                  }
-                },
               })}
               onBlur={(e) => {
                 const value = e.target.value.trim();
