@@ -38,11 +38,20 @@ export default function ArticlesSlugEdit({ loaderData }: Route.ComponentProps) {
     }
   }, [articleData, userInfo, navigate]);
 
-  const { register, handleSubmit } = useForm();
+  const {
+    register,
+    watch,
+    trigger,
+    setValue,
+    handleSubmit,
+    formState: { errors },
+  } = useForm();
 
   const [updateArticle, { isLoading, error }] = useUpdateArticleMutation();
 
-  const [tagInputs, setTagInputs] = useState<string[]>(articleData?.tagList);
+  const [tagInputs, setTagInputs] = useState<string[]>(
+    articleData?.tagList?.length ? articleData.tagList : [""]
+  );
   const addTagInput = () => {
     setTagInputs([...tagInputs, ""]);
   };
@@ -93,6 +102,7 @@ export default function ArticlesSlugEdit({ loaderData }: Route.ComponentProps) {
     );
   }
 
+  console.log(articleData);
   return (
     <article className="py-[26px] px-[251px]">
       <div className="bg-white py-[48px] px-[32px] shadow-md flex flex-col gap-[25px]">
@@ -111,8 +121,22 @@ export default function ArticlesSlugEdit({ loaderData }: Route.ComponentProps) {
                rounded-xs`}
               placeholder="Title"
               defaultValue={articleData?.title}
-              {...register("title", { required: "Title is required" })}
+              {...register("title", {
+                required: "Title is required",
+                validate: () => {
+                  if (watch("title").trim().length === 0) {
+                    return `Field shouldn't be empty`;
+                  }
+                },
+              })}
+              onBlur={(e) => {
+                setValue("title", e.target.value);
+                trigger("title");
+              }}
             />
+            {errors.title && (
+              <p className="text-red-500">{errors.title.message?.toString()}</p>
+            )}
           </div>
           <div className="flex flex-col gap-[2px]">
             {" "}
@@ -126,8 +150,22 @@ export default function ArticlesSlugEdit({ loaderData }: Route.ComponentProps) {
               defaultValue={articleData?.description}
               {...register("description", {
                 required: "Description is required",
+                validate: () => {
+                  if (watch("description").trim().length === 0) {
+                    return `Field shouldn't be empty`;
+                  }
+                },
               })}
+              onBlur={(e) => {
+                setValue("description", e.target.value);
+                trigger("description");
+              }}
             />
+            {errors.description && (
+              <p className="text-red-500">
+                {errors.description.message?.toString()}
+              </p>
+            )}
           </div>
 
           <div className="flex flex-col gap-[2px]">
@@ -139,8 +177,23 @@ export default function ArticlesSlugEdit({ loaderData }: Route.ComponentProps) {
                rounded-xs`}
               placeholder="Text"
               defaultValue={articleData?.body}
-              {...register("body", { required: "Text is required" })}
+              {...register("body", {
+                required: "Text is required",
+                validate: () => {
+                  if (watch("body").trim().length === 0) {
+                    return `Field shouldn't be empty`;
+                  }
+                },
+              })}
+              onBlur={(e) => {
+                const value = e.target.value.trim();
+                setValue("body", value);
+                trigger("body");
+              }}
             ></textarea>
+            {errors.body && (
+              <p className="text-red-500">{errors?.body.message?.toString()}</p>
+            )}
           </div>
           <div className="flex flex-col gap-[2px]">
             {" "}
