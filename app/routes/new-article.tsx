@@ -92,8 +92,7 @@ export default function NewArticle() {
                 },
               })}
               onBlur={(e) => {
-                const value = e.target.value.trim();
-                setValue("description", value);
+                setValue("description", e.target.value);
                 trigger("description");
               }}
             />
@@ -121,7 +120,8 @@ export default function NewArticle() {
                 },
               })}
               onBlur={(e) => {
-                setValue("body", e.target.value);
+                const value = e.target.value.trim();
+                setValue("body", value);
                 trigger("body");
               }}
             ></textarea>
